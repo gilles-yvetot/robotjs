@@ -431,7 +431,9 @@ int GetFlagsFromValue(v8::Local<v8::Value> value, MMKeyFlags* flags)
 		v8::Local<v8::Array> a = v8::Local<v8::Array>::Cast(value);
 		for (uint32_t i = 0; i < a->Length(); i++)
 		{
-			v8::Local<v8::Value> v(a->Get(i));
+			// v8::Local<v8::Value> v(a->Get(i));
+			v8::Local<v8::Value> v(Nan::Get(a, i).ToLocalChecked());
+			
 			if (!v->IsString()) return -2;
 
 			MMKeyFlags f = MOD_NONE;
@@ -758,59 +760,59 @@ class BMP
 		uint8_t *image;
 };
 
-//Convert object from Javascript to a C++ class (BMP).
-BMP buildBMP(Local<Object> info)
-{
-	Local<Object> obj = Nan::To<v8::Object>(info).ToLocalChecked();
+// //Convert object from Javascript to a C++ class (BMP).
+// BMP buildBMP(Local<Object> info)
+// {
+// 	Local<Object> obj = Nan::To<v8::Object>(info).ToLocalChecked();
 
-	BMP img;
+// 	BMP img;
 
-	img.width = obj->Get(Nan::New("width").ToLocalChecked())->Uint32Value(Nan::GetCurrentContext()).FromJust();
-	img.height = obj->Get(Nan::New("height").ToLocalChecked())->Uint32Value(Nan::GetCurrentContext()).FromJust();
-	img.byteWidth = obj->Get(Nan::New("byteWidth").ToLocalChecked())->Uint32Value(Nan::GetCurrentContext()).FromJust();
-	img.bitsPerPixel = obj->Get(Nan::New("bitsPerPixel").ToLocalChecked())->Uint32Value(Nan::GetCurrentContext()).FromJust();
-	img.bytesPerPixel = obj->Get(Nan::New("bytesPerPixel").ToLocalChecked())->Uint32Value(Nan::GetCurrentContext()).FromJust();
+// 	img.width = Nan::Get(obj, Nan::New("width").ToLocalChecked())->Uint32Value(Nan::GetCurrentContext()).FromJust();
+// 	img.height = Nan::Get(obj, Nan::New("height").ToLocalChecked())->Uint32Value(Nan::GetCurrentContext()).FromJust();
+// 	img.byteWidth = Nan::Get(obj, Nan::New("byteWidth").ToLocalChecked())->Uint32Value(Nan::GetCurrentContext()).FromJust();
+// 	img.bitsPerPixel = Nan::Get(obj, Nan::New("bitsPerPixel").ToLocalChecked())->Uint32Value(Nan::GetCurrentContext()).FromJust();
+// 	img.bytesPerPixel = Nan::Get(obj, Nan::New("bytesPerPixel").ToLocalChecked())->Uint32Value(Nan::GetCurrentContext()).FromJust();
 
-	char* buf = node::Buffer::Data(obj->Get(Nan::New("image").ToLocalChecked()));
+// 	char* buf = node::Buffer::Data(Nan::Get(obj, Nan::New("image").ToLocalChecked()));
 
-	//Convert the buffer to a uint8_t which createMMBitmap requires.
-	img.image = (uint8_t *)malloc(img.byteWidth * img.height);
-	memcpy(img.image, buf, img.byteWidth * img.height);
+// 	//Convert the buffer to a uint8_t which createMMBitmap requires.
+// 	img.image = (uint8_t *)malloc(img.byteWidth * img.height);
+// 	memcpy(img.image, buf, img.byteWidth * img.height);
 
-	return img;
- }
+// 	return img;
+//  }
 
-NAN_METHOD(getColor)
-{
-	MMBitmapRef bitmap;
-	MMRGBHex color;
+// NAN_METHOD(getColor)
+// {
+// 	MMBitmapRef bitmap;
+// 	MMRGBHex color;
 
-	size_t x = Nan::To<int32_t>(info[1]).FromJust();
-	size_t y = Nan::To<int32_t>(info[2]).FromJust();
+// 	size_t x = Nan::To<int32_t>(info[1]).FromJust();
+// 	size_t y = Nan::To<int32_t>(info[2]).FromJust();
 
-	//Get our image object from JavaScript.
-	BMP img = buildBMP(Nan::To<v8::Object>(info[0]).ToLocalChecked());
+// 	//Get our image object from JavaScript.
+// 	BMP img = buildBMP(Nan::To<v8::Object>(info[0]).ToLocalChecked());
 
-	//Create the bitmap.
-	bitmap = createMMBitmap(img.image, img.width, img.height, img.byteWidth, img.bitsPerPixel, img.bytesPerPixel);
+// 	//Create the bitmap.
+// 	bitmap = createMMBitmap(img.image, img.width, img.height, img.byteWidth, img.bitsPerPixel, img.bytesPerPixel);
 
-	// Make sure the requested pixel is inside the bitmap.
-	if (!MMBitmapPointInBounds(bitmap, MMPointMake(x, y)))
-	{
-		return Nan::ThrowError("Requested coordinates are outside the bitmap's dimensions.");
-	}
+// 	// Make sure the requested pixel is inside the bitmap.
+// 	if (!MMBitmapPointInBounds(bitmap, MMPointMake(x, y)))
+// 	{
+// 		return Nan::ThrowError("Requested coordinates are outside the bitmap's dimensions.");
+// 	}
 
-	color = MMRGBHexAtPoint(bitmap, x, y);
+// 	color = MMRGBHexAtPoint(bitmap, x, y);
 
-	char hex[7];
+// 	char hex[7];
 
-	padHex(color, hex);
+// 	padHex(color, hex);
 
-	destroyMMBitmap(bitmap);
+// 	destroyMMBitmap(bitmap);
 
-	info.GetReturnValue().Set(Nan::New(hex).ToLocalChecked());
+// 	info.GetReturnValue().Set(Nan::New(hex).ToLocalChecked());
 
-}
+// }
 
 NAN_MODULE_INIT(InitAll)
 {
@@ -862,8 +864,8 @@ NAN_MODULE_INIT(InitAll)
 	Nan::Set(target, Nan::New("captureScreen").ToLocalChecked(),
 		Nan::GetFunction(Nan::New<FunctionTemplate>(captureScreen)).ToLocalChecked());
 
-	Nan::Set(target, Nan::New("getColor").ToLocalChecked(),
-		Nan::GetFunction(Nan::New<FunctionTemplate>(getColor)).ToLocalChecked());
+	// Nan::Set(target, Nan::New("getColor").ToLocalChecked(),
+	// 	Nan::GetFunction(Nan::New<FunctionTemplate>(getColor)).ToLocalChecked());
 
 	Nan::Set(target, Nan::New("getXDisplayName").ToLocalChecked(),
 		Nan::GetFunction(Nan::New<FunctionTemplate>(getXDisplayName)).ToLocalChecked());
