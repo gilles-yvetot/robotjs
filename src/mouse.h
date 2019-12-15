@@ -57,6 +57,12 @@ enum __MMMouseWheelDirection
 };
 typedef int MMMouseWheelDirection;
 
+/* Updates information about current virtual screen size and coordinates
+ * in Windows
+ * It is up to the caller to ensure that this called before mouse moving
+*/
+void updateScreenMetrics();
+
 /* Immediately moves the mouse to the given point on-screen.
  * It is up to the caller to ensure that this point is within the
  * screen boundaries. */
@@ -73,7 +79,7 @@ void dragMouse(MMSignedPoint point, const MMMouseButton button);
  *
  * Returns false if unsuccessful (i.e. a point was hit that is outside of the
  * screen boundaries), or true if successful. */
-bool smoothlyMoveMouse(MMPoint point);
+bool smoothlyMoveMouse(MMPoint point,double speed);
 
 /* Returns the coordinates of the mouse on the current screen. */
 MMSignedPoint getMousePos(void);
