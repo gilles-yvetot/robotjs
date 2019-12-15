@@ -185,7 +185,9 @@ MMSignedPoint getMousePos()
 	POINT point;
 	GetCursorPos(&point);
 
-	return MMPointFromPOINT(point);
+	// Note (@mo)
+	// return MMPointFromPOINT(point);
+	return MMSignedPointFromPOINT(point);
 #endif
 }
 
