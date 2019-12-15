@@ -137,14 +137,14 @@ void dragMouse(MMSignedPoint point, const MMMouseButton button)
 #endif
 }
 
-MMPoint getMousePos()
+MMSignedPoint getMousePos()
 {
 #if defined(IS_MACOSX)
 	CGEventRef event = CGEventCreate(NULL);
 	CGPoint point = CGEventGetLocation(event);
 	CFRelease(event);
 
-	return MMPointFromCGPoint(point);
+	return MMSignedPointFromCGPoint(point);
 #elif defined(USE_X11)
 	int x, y; /* This is all we care about. Seriously. */
 	Window garb1, garb2; /* Why you can't specify NULL as a parameter */
@@ -155,7 +155,7 @@ MMPoint getMousePos()
 	XQueryPointer(display, XDefaultRootWindow(display), &garb1, &garb2,
 	              &x, &y, &garb_x, &garb_y, &more_garbage);
 
-	return MMPointMake(x, y);
+	return MMSignedPointMake(x, y);
 #elif defined(IS_WINDOWS)
 	POINT point;
 	GetCursorPos(&point);
@@ -172,7 +172,7 @@ MMPoint getMousePos()
 void toggleMouse(bool down, MMMouseButton button)
 {
 #if defined(IS_MACOSX)
-	const CGPoint currentPos = CGPointFromMMPoint(getMousePos());
+	const CGPoint currentPos = CGPointFromMMSignedPoint(getMousePos());
 	const CGEventType mouseType = MMMouseToCGEventType(down, button);
 	CGEventRef event = CGEventCreateMouseEvent(NULL,
 	                                           mouseType,
@@ -213,7 +213,7 @@ void doubleClick(MMMouseButton button)
 #if defined(IS_MACOSX)
 
 	/* Double click for Mac. */
-	const CGPoint currentPos = CGPointFromMMPoint(getMousePos());
+	const CGPoint currentPos = CGPointFromMMSignedPoint(getMousePos());
 	const CGEventType mouseTypeDown = MMMouseToCGEventType(true, button);
 	const CGEventType mouseTypeUP = MMMouseToCGEventType(false, button);
 
@@ -347,7 +347,7 @@ static double crude_hypot(double x, double y)
 
 bool smoothlyMoveMouse(MMPoint endPoint)
 {
-	MMPoint pos = getMousePos();
+	MMSignedPoint pos = getMousePos();
 	MMSize screenSize = getMainDisplaySize();
 	double velo_x = 0.0, velo_y = 0.0;
 	double distance;
@@ -367,6 +367,7 @@ bool smoothlyMoveMouse(MMPoint endPoint)
 		pos.x += floor(velo_x + 0.5);
 		pos.y += floor(velo_y + 0.5);
 
+		// note(@mo): Unsigned compare with signed danger. Probably won't work correctly after v0.5.3
 		/* Make sure we are in the screen boundaries!
 		 * (Strange things will happen if we are not.) */
 		if (pos.x >= screenSize.width || pos.y >= screenSize.height) {
