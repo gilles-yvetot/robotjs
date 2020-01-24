@@ -1,6 +1,6 @@
 {
   "name": "@morajabi/robotjs",
-  "version": "0.6.2-beta.2",
+  "version": "0.6.2-beta.3",
   "description": "Node.js Desktop Automation.",
   "main": "index.js",
   "typings": "index.d.ts",
