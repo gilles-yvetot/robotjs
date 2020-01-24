@@ -98,9 +98,10 @@ void win32KeyEvent(int key, MMKeyFlags flags)
 	}
 
 	/* Set the scan code for keyup */
-	if ( flags & KEYEVENTF_KEYUP ) {
-		scan |= 0x80;
-	}
+	// ref https://github.com/octalmage/robotjs/issues/252
+	// if ( flags & KEYEVENTF_KEYUP ) {
+	// 	scan |= 0x80;
+	// }
 
 	flags |= KEYEVENTF_SCANCODE;
 
@@ -131,14 +132,20 @@ void toggleKeyCode(MMKeyCode code, const bool down, MMKeyFlags flags)
 		kr = IOHIDPostEvent( _getAuxiliaryKeyDriver(), NX_SYSDEFINED, loc, &event, kNXEventDataVersion, 0, FALSE );
 		assert( KERN_SUCCESS == kr );
 	} else {
-		CGEventRef keyEvent = CGEventCreateKeyboardEvent(NULL,
+
+		CGEventSourceRef eventSource = CGEventSourceCreate(kCGEventSourceStateHIDSystemState);
+		CGEventRef keyEvent = CGEventCreateKeyboardEvent(eventSource,
 		                                                 (CGKeyCode)code, down);
+		// CGEventRef keyEvent = CGEventCreateKeyboardEvent(NULL,
+		//                                                  (CGKeyCode)code, down);
 		assert(keyEvent != NULL);
 
 		CGEventSetType(keyEvent, down ? kCGEventKeyDown : kCGEventKeyUp);
 		CGEventSetFlags(keyEvent, flags);
 		CGEventPost(kCGSessionEventTap, keyEvent);
 		CFRelease(keyEvent);
+		// Added
+		CFRelease(eventSource);
 	}
 #elif defined(IS_WINDOWS)
 	const DWORD dwFlags = down ? 0 : KEYEVENTF_KEYUP;
